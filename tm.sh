@@ -67,15 +67,97 @@ check_root() {
     fi
 }
 
+# 检查并安装必要的工具
+install_required_packages() {
+    local packages_to_install=""
+
+    if ! command -v curl &> /dev/null; then
+        packages_to_install+=" curl"
+    fi
+
+    if ! command -v wget &> /dev/null; then
+        packages_to_install+=" wget"
+    fi
+
+    if [ -n "$packages_to_install" ]; then
+        print_color YELLOW "$(display_text "Installing required packages:${packages_to_install}" "正在安装必要的包：${packages_to_install}")"
+        if command -v apt-get &> /dev/null; then
+            apt-get update && apt-get install -y $packages_to_install
+        elif command -v yum &> /dev/null; then
+            yum install -y $packages_to_install
+        else
+            print_color RED "$(display_text "Unable to install packages. Please install manually: ${packages_to_install}" "无法安装软件包。请手动安装：${packages_to_install}")"
+            exit 1
+        fi
+    fi
+}
+
 # 检查系统和安装Docker
 check_system_and_install_docker() {
     if ! command -v docker &> /dev/null; then
         print_color YELLOW "$(display_text "Docker not found. Installing Docker..." "未找到Docker。正在安装Docker...")"
-        curl -fsSL https://get.docker.com | sh
+
+        # 检测操作系统
+        if [ -f /etc/os-release ]; then
+            . /etc/os-release
+            OS=$ID
+        else
+            OS=$(uname -s)
+        fi
+
+        case $OS in
+            debian|ubuntu)
+                # 安装必要的包
+                apt-get update
+                apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release
+
+                # 添加Docker的官方GPG密钥
+                curl -fsSL https://download.docker.com/linux/$OS/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+
+                # 设置稳定版仓库
+                echo \
+                "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/$OS \
+                $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+                # 安装Docker Engine
+                apt-get update
+                apt-get install -y docker-ce docker-ce-cli containerd.io
+                ;;
+            centos|fedora|rhel)
+                # 安装必要的包
+                yum install -y yum-utils
+
+                # 设置稳定版仓库
+                yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+
+                # 安装Docker Engine
+                yum install -y docker-ce docker-ce-cli containerd.io
+                ;;
+            *)
+                print_color RED "$(display_text "Unsupported operating system. Please install Docker manually." "不支持的操作系统。请手动安装Docker。")"
+                exit 1
+                ;;
+        esac
+
+        # 启动Docker
+        systemctl start docker
         systemctl enable docker
+    else
+        print_color GREEN "$(display_text "Docker is already installed." "Docker已经安装。")"
+    fi
+
+    if ! systemctl is-active --quiet docker; then
+        print_color YELLOW "$(display_text "Docker is not running. Starting Docker..." "Docker未运行。正在启动Docker...")"
         systemctl start docker
     fi
-    print_color GREEN "$(display_text "Docker is installed and running." "Docker已安装并运行。")"
+
+    # 验证Docker是否正确安装和运行
+    if docker info &>/dev/null; then
+        print_color GREEN "$(display_text "Docker is installed and running." "Docker已安装并运行。")"
+    else
+        print_color RED "$(display_text "Failed to install or start Docker. Please check your system and try again." "安装或启动Docker失败。请检查您的系统并重试。")"
+        exit 1
+    fi
 }
 
 # 检查IPv4
@@ -116,10 +198,12 @@ input_device_name() {
 # 安装Traffmonetizer
 install_traffmonetizer() {
     clear_screen
-    print_color YELLOW "$(display_text "Installing Traffmonetizer..." "正在安装Traffmonetizer...")"
+    if docker ps -a | grep -q "$NAME"; then
+        print_color YELLOW "$(display_text "Traffmonetizer is already installed." "Traffmonetizer已经安装。")"
+        return
+    fi
 
-    # 删除旧容器（如果存在）
-    docker ps -a | awk '{print $NF}' | grep -qw "$NAME" && docker rm -f "$NAME" >/dev/null 2>&1
+    print_color YELLOW "$(display_text "Installing Traffmonetizer..." "正在安装Traffmonetizer...")"
 
     # 拉取镜像
     docker pull traffmonetizer/cli_v2:$ARCH
@@ -136,17 +220,16 @@ install_traffmonetizer() {
     else
         print_color RED "$(display_text "Failed to install Traffmonetizer. Please check your token and try again." "安装Traffmonetizer失败。请检查您的令牌并重试。")"
     fi
-
-    # 安装Watchtower
-    if ! docker ps -a | grep -q 'watchtower'; then
-        docker run -d --name watchtower --restart always -v /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower --cleanup >/dev/null 2>&1
-        print_color GREEN "$(display_text "Watchtower installed for automatic updates." "已安装Watchtower以进行自动更新。")"
-    fi
 }
 
 # 卸载Traffmonetizer
 uninstall_traffmonetizer() {
     clear_screen
+    if ! docker ps -a | grep -q "$NAME"; then
+        print_color YELLOW "$(display_text "Traffmonetizer is not installed." "Traffmonetizer未安装。")"
+        return
+    fi
+
     print_color YELLOW "$(display_text "Uninstalling Traffmonetizer..." "正在卸载Traffmonetizer...")"
     docker rm -f $(docker ps -a | grep -w "$NAME" | awk '{print $1}') 2>/dev/null
     docker rmi -f $(docker images | grep traffmonetizer/cli_v2 | awk '{print $3}') 2>/dev/null
@@ -171,53 +254,45 @@ show_status() {
     fi
 }
 
-# 设置多IP
-setup_multi_ip() {
+# 卸载Docker、Watchtower和清理系统
+uninstall_docker_and_cleanup() {
     clear_screen
-    print_color YELLOW "$(display_text "Setting up Multi-IP Configuration..." "正在设置多IP配置...")"
-    reading "$(display_text "Enter the number of networks: " "输入网络数量：")" "network_count"
-    for ((i=1; i<=$network_count; i++)); do
-        reading "$(display_text "Enter subnet for network $i (e.g., 192.168.33.0/24): " "输入网络 $i 的子网（例如，192.168.33.0/24）：")" "subnet"
-        reading "$(display_text "Enter public IP for network $i: " "输入网络 $i 的公网IP：")" "public_ip"
-        docker network create my_network_$i --driver bridge --subnet $subnet
-        iptables -t nat -I POSTROUTING -s $subnet -j SNAT --to-source $public_ip
-        reading "$(display_text "Enter token for instance $i: " "输入实例 $i 的令牌：")" "token"
-        reading "$(display_text "Enter device name for instance $i (optional): " "输入实例 $i 的设备名称（可选）：")" "device_name"
-        if [ -n "$device_name" ]; then
-            docker run -d --network my_network_$i --name tm_$i --restart always traffmonetizer/cli_v2:$ARCH start accept --token $token --device-name "$device_name"
-        else
-            docker run -d --network my_network_$i --name tm_$i --restart always traffmonetizer/cli_v2:$ARCH start accept --token $token
+    print_color YELLOW "$(display_text "Uninstalling Docker, Watchtower and cleaning up the system..." "正在卸载Docker、Watchtower并清理系统...")"
+
+    # 检查Docker是否安装
+    if command -v docker &> /dev/null; then
+        # 停止并删除Watchtower容器（如果存在）
+        if docker ps -a | grep -q 'watchtower'; then
+            print_color YELLOW "$(display_text "Removing Watchtower..." "正在移除Watchtower...")"
+            docker stop watchtower 2>/dev/null
+            docker rm watchtower 2>/dev/null
+            docker rmi containrrr/watchtower 2>/dev/null
         fi
-    done
-    print_color GREEN "$(display_text "Multi-IP setup complete." "多IP设置完成。")"
-}
 
-# 卸载Docker
-uninstall_docker() {
-    clear_screen
-    print_color YELLOW "$(display_text "Uninstalling Docker..." "正在卸载Docker...")"
+        # 停止所有容器
+        docker stop $(docker ps -aq) 2>/dev/null
 
-    # 停止所有容器
-    docker stop $(docker ps -aq)
+        # 删除所有容器
+        docker rm $(docker ps -aq) 2>/dev/null
 
-    # 删除所有容器
-    docker rm $(docker ps -aq)
+        # 删除所有镜像
+        docker rmi $(docker images -q) 2>/dev/null
 
-    # 删除所有镜像
-    docker rmi $(docker images -q)
+        # 删除所有卷
+        docker volume rm $(docker volume ls -q) 2>/dev/null
 
-    # 删除所有卷
-    docker volume rm $(docker volume ls -q)
-
-    # 删除所有网络
-    docker network rm $(docker network ls -q)
+        # 删除所有网络
+        docker network rm $(docker network ls -q) 2>/dev/null
+    else
+        print_color YELLOW "$(display_text "Docker is not installed or already removed." "Docker未安装或已被移除。")"
+    fi
 
     # 卸载Docker
     if command -v apt-get &> /dev/null; then
-        apt-get purge -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+        apt-get purge -y docker-ce docker-ce-cli containerd.io docker-compose-plugin docker.io
         apt-get autoremove -y
     elif command -v yum &> /dev/null; then
-        yum remove -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+        yum remove -y docker-ce docker-ce-cli containerd.io docker-compose-plugin docker
         yum autoremove -y
     fi
 
@@ -225,7 +300,33 @@ uninstall_docker() {
     rm -rf /var/lib/docker
     rm -rf /var/lib/containerd
 
-    print_color GREEN "$(display_text "Docker has been uninstalled." "Docker已卸载。")"
+    # 删除Docker配置文件
+    rm -rf /etc/docker
+
+    # 删除Docker系统服务文件
+    rm -f /etc/systemd/system/docker.service
+    rm -f /etc/systemd/system/docker.socket
+
+    # 刷新系统服务
+    systemctl daemon-reload
+
+    # 检查iptables是否安装
+    if command -v iptables &> /dev/null; then
+        # 清理IPTables规则
+        iptables -F
+        iptables -X
+        iptables -t nat -F
+        iptables -t nat -X
+        iptables -t mangle -F
+        iptables -t mangle -X
+        iptables -P INPUT ACCEPT
+        iptables -P FORWARD ACCEPT
+        iptables -P OUTPUT ACCEPT
+    else
+        print_color YELLOW "$(display_text "iptables is not installed or already removed." "iptables未安装或已被移除。")"
+    fi
+
+    print_color GREEN "$(display_text "Docker, Watchtower have been uninstalled and the system has been cleaned up." "Docker、Watchtower已卸载，系统已清理。")"
 }
 
 # 显示菜单
@@ -237,17 +338,17 @@ show_menu() {
     print_color YELLOW "1. $(display_text "Install Traffmonetizer" "安装 Traffmonetizer")"
     print_color YELLOW "2. $(display_text "Uninstall Traffmonetizer" "卸载 Traffmonetizer")"
     print_color YELLOW "3. $(display_text "Show Status" "显示状态")"
-    print_color YELLOW "4. $(display_text "Setup Multi-IP" "设置多IP")"
-    print_color YELLOW "5. $(display_text "Uninstall Docker" "卸载 Docker")"
-    print_color YELLOW "6. $(display_text "Exit" "退出")"
+    print_color YELLOW "4. $(display_text "Uninstall Docker, Watchtower and Cleanup" "卸载 Docker、Watchtower 并清理系统")"
+    print_color YELLOW "5. $(display_text "Exit" "退出")"
     print_color PURPLE "======================================="
-    reading "$(display_text "Enter your choice [1-6]: " "输入你的选择 [1-6]：")" "choice"
+    reading "$(display_text "Enter your choice [1-5]: " "输入你的选择 [1-5]：")" "choice"
 }
 
 # 主程序
 main() {
     check_root
     select_language
+    install_required_packages
     check_system_and_install_docker
     check_ipv4
     check_architecture
@@ -267,12 +368,9 @@ main() {
                 show_status
                 ;;
             4)
-                setup_multi_ip
+                uninstall_docker_and_cleanup
                 ;;
             5)
-                uninstall_docker
-                ;;
-            6)
                 clear_screen
                 print_color GREEN "$(display_text "Exiting..." "正在退出...")"
                 exit 0
