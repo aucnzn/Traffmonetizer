@@ -15,6 +15,98 @@ NAME='tm'
 # 语言选择
 LANGUAGE=""
 
+# 使用关联数组存储多语言文本
+declare -A TEXTS
+TEXTS[install_en]="Installing"
+TEXTS[install_cn]="正在安装"
+TEXTS[uninstall_en]="Uninstalling"
+TEXTS[uninstall_cn]="正在卸载"
+TEXTS[docker_installed_en]="Docker is already installed."
+TEXTS[docker_installed_cn]="Docker 已经安装。"
+TEXTS[docker_not_found_en]="Docker not found. Installing Docker..."
+TEXTS[docker_not_found_cn]="未找到 Docker。正在安装 Docker..."
+TEXTS[low_memory_en]="Low memory system detected. Installing Docker for low-end devices."
+TEXTS[low_memory_cn]="检测到低内存系统。正在为低配置设备安装 Docker。"
+TEXTS[standard_docker_en]="Installing standard Docker version."
+TEXTS[standard_docker_cn]="正在安装标准 Docker 版本。"
+TEXTS[docker_success_en]="Docker is installed and running."
+TEXTS[docker_success_cn]="Docker 已安装并正在运行。"
+TEXTS[docker_fail_en]="Failed to install or start Docker. Please check your system and try again."
+TEXTS[docker_fail_cn]="安装或启动 Docker 失败。请检查您的系统并重试。"
+TEXTS[ipv4_error_en]="Error: The host must have IPv4."
+TEXTS[ipv4_error_cn]="错误：主机必须有 IPv4。"
+TEXTS[arch_error_en]="Error: Unsupported architecture:"
+TEXTS[arch_error_cn]="错误：不支持的架构："
+TEXTS[token_prompt_en]="Enter your Traffmonetizer token: "
+TEXTS[token_prompt_cn]="输入你的 Traffmonetizer 令牌："
+TEXTS[token_empty_en]="Error: Token cannot be empty."
+TEXTS[token_empty_cn]="错误：令牌不能为空。"
+TEXTS[device_name_prompt_en]="Enter device name (optional, press Enter to skip): "
+TEXTS[device_name_prompt_cn]="输入设备名称（可选，按 Enter 跳过）："
+TEXTS[tm_installed_en]="Traffmonetizer is already installed."
+TEXTS[tm_installed_cn]="Traffmonetizer 已经安装。"
+TEXTS[tm_installing_en]="Installing Traffmonetizer..."
+TEXTS[tm_installing_cn]="正在安装 Traffmonetizer..."
+TEXTS[tm_success_en]="Traffmonetizer installed successfully."
+TEXTS[tm_success_cn]="Traffmonetizer 安装成功。"
+TEXTS[tm_fail_en]="Failed to install Traffmonetizer. Please check your token and try again."
+TEXTS[tm_fail_cn]="安装 Traffmonetizer 失败。请检查您的令牌并重试。"
+TEXTS[tm_not_installed_en]="Traffmonetizer is not installed."
+TEXTS[tm_not_installed_cn]="Traffmonetizer 未安装。"
+TEXTS[tm_uninstalling_en]="Uninstalling Traffmonetizer..."
+TEXTS[tm_uninstalling_cn]="正在卸载 Traffmonetizer..."
+TEXTS[tm_uninstalled_en]="Traffmonetizer uninstalled."
+TEXTS[tm_uninstalled_cn]="Traffmonetizer 已卸载。"
+TEXTS[tm_not_running_en]="Traffmonetizer is not running."
+TEXTS[tm_not_running_cn]="Traffmonetizer 未运行。"
+TEXTS[tm_status_en]="Traffmonetizer Status:"
+TEXTS[tm_status_cn]="Traffmonetizer 状态："
+TEXTS[tm_statistics_en]="Traffmonetizer Statistics:"
+TEXTS[tm_statistics_cn]="Traffmonetizer 统计："
+TEXTS[cleanup_en]="Uninstalling Docker, Watchtower and cleaning up the system..."
+TEXTS[cleanup_cn]="正在卸载 Docker、Watchtower 并清理系统..."
+TEXTS[cleanup_done_en]="Docker, Watchtower have been uninstalled and the system has been cleaned up."
+TEXTS[cleanup_done_cn]="Docker、Watchtower 已卸载，系统已清理。"
+TEXTS[menu_title_en]="Traffmonetizer Management Script"
+TEXTS[menu_title_cn]="Traffmonetizer 管理脚本"
+TEXTS[menu_install_en]="Install Traffmonetizer"
+TEXTS[menu_install_cn]="安装 Traffmonetizer"
+TEXTS[menu_uninstall_en]="Uninstall Traffmonetizer"
+TEXTS[menu_uninstall_cn]="卸载 Traffmonetizer"
+TEXTS[menu_status_en]="Show Status"
+TEXTS[menu_status_cn]="显示状态"
+TEXTS[menu_cleanup_en]="Uninstall Docker, Watchtower and Cleanup"
+TEXTS[menu_cleanup_cn]="卸载 Docker、Watchtower 并清理系统"
+TEXTS[menu_exit_en]="Exit"
+TEXTS[menu_exit_cn]="退出"
+TEXTS[menu_prompt_en]="Enter your choice [1-5]: "
+TEXTS[menu_prompt_cn]="输入你的选择 [1-5]："
+TEXTS[invalid_option_en]="Invalid option, please try again."
+TEXTS[invalid_option_cn]="无效选项，请重试。"
+TEXTS[exiting_en]="Exiting..."
+TEXTS[exiting_cn]="正在退出..."
+TEXTS[continue_prompt_en]="Press Enter to continue..."
+TEXTS[continue_prompt_cn]="按 Enter 继续..."
+TEXTS[system_status_en]="System Status"
+TEXTS[system_status_cn]="系统状态"
+TEXTS[docker_running_en]="Docker is running"
+TEXTS[docker_running_cn]="Docker 正在运行"
+TEXTS[docker_not_running_en]="Docker is not running"
+TEXTS[docker_not_running_cn]="Docker 未运行"
+TEXTS[tm_running_en]="Traffmonetizer is running"
+TEXTS[tm_running_cn]="Traffmonetizer 正在运行"
+TEXTS[tm_not_running_en]="Traffmonetizer is not running"
+TEXTS[tm_not_running_cn]="Traffmonetizer 未运行"
+TEXTS[tm_uptime_en]="Running since:"
+TEXTS[tm_uptime_cn]="运行时间："
+TEXTS[tm_usage_en]="Resource usage:"
+TEXTS[tm_usage_cn]="资源使用："
+TEXTS[running_containers_en]="Running Docker Containers:"
+TEXTS[running_containers_cn]="正在运行的 Docker 容器："
+TEXTS[no_running_containers_en]="No running containers"
+TEXTS[no_running_containers_cn]="没有正在运行的容器"
+
+
 # 函数：清屏
 clear_screen() {
     clear
@@ -40,23 +132,15 @@ select_language() {
         print_color CYAN "Please select your language / 请选择你的语言:"
         print_color YELLOW "1. English"
         print_color YELLOW "2. 中文"
-        reading "Enter your choice (1 or 2): " "lang_choice"
-
-        case $lang_choice in
-            1) LANGUAGE="EN";;
-            2) LANGUAGE="CN";;
-            *) print_color RED "Invalid choice. Default to English."; LANGUAGE="EN";;
-        esac
+        read -r lang_choice
+        LANGUAGE=$([[ $lang_choice == 2 ]] && echo "CN" || echo "EN")
     fi
 }
 
-# 函数：根据选择的语言显示文本
+# 函数：显示多语言文本
 display_text() {
-    if [ "$LANGUAGE" = "CN" ]; then
-        echo -n "$2"
-    else
-        echo -n "$1"
-    fi
+    local key="${1}_${LANGUAGE,,}"
+    echo -n "${TEXTS[$key]:-$1}"
 }
 
 # 检查root权限
@@ -67,124 +151,99 @@ check_root() {
     fi
 }
 
-# 检查并安装必要的工具
+# 安装必要的包
 install_required_packages() {
     local packages_to_install=""
-
-    if ! command -v curl &> /dev/null; then
-        packages_to_install+=" curl"
-    fi
-
-    if ! command -v wget &> /dev/null; then
-        packages_to_install+=" wget"
-    fi
+    for pkg in curl wget; do
+        command -v $pkg &>/dev/null || packages_to_install+=" $pkg"
+    done
 
     if [ -n "$packages_to_install" ]; then
-        print_color YELLOW "$(display_text "Installing required packages:${packages_to_install}" "正在安装必要的包：${packages_to_install}")"
-        if command -v apt-get &> /dev/null; then
+        print_color YELLOW "$(display_text "Installing required packages:${packages_to_install}")"
+        if command -v apt-get &>/dev/null; then
             apt-get update && apt-get install -y $packages_to_install
-        elif command -v yum &> /dev/null; then
+        elif command -v yum &>/dev/null; then
             yum install -y $packages_to_install
         else
-            print_color RED "$(display_text "Unable to install packages. Please install manually: ${packages_to_install}" "无法安装软件包。请手动安装：${packages_to_install}")"
+            print_color RED "$(display_text "Unable to install packages. Please install manually: ${packages_to_install}")"
             exit 1
         fi
     fi
 }
 
-# 检查系统和安装Docker
-check_system_and_install_docker() {
-    if ! command -v docker &> /dev/null; then
-        print_color YELLOW "$(display_text "Docker not found. Installing Docker..." "未找到Docker。正在安装Docker...")"
-
-        # 检测操作系统
-        if [ -f /etc/os-release ]; then
-            . /etc/os-release
-            OS=$ID
-        else
-            OS=$(uname -s)
-        fi
-
-        case $OS in
-            debian|ubuntu)
-                # 安装必要的包
-                apt-get update
-                apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release
-
-                # 添加Docker的官方GPG密钥
-                curl -fsSL https://download.docker.com/linux/$OS/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-
-                # 设置稳定版仓库
-                echo \
-                "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/$OS \
-                $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
-
-                # 安装Docker Engine
-                apt-get update
-                apt-get install -y docker-ce docker-ce-cli containerd.io
-                ;;
-            centos|fedora|rhel)
-                # 安装必要的包
-                yum install -y yum-utils
-
-                # 设置稳定版仓库
-                yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-
-                # 安装Docker Engine
-                yum install -y docker-ce docker-ce-cli containerd.io
-                ;;
-            *)
-                print_color RED "$(display_text "Unsupported operating system. Please install Docker manually." "不支持的操作系统。请手动安装Docker。")"
-                exit 1
-                ;;
-        esac
-
-        # 启动Docker
-        systemctl start docker
-        systemctl enable docker
+# 检查系统内存
+check_system_memory() {
+    local total_mem=$(free -m | awk '/^Mem:/{print $2}')
+    if [ $total_mem -lt 512 ]; then
+        return 1  # 低内存系统
     else
-        print_color GREEN "$(display_text "Docker is already installed." "Docker已经安装。")"
+        return 0  # 正常内存系统
+    fi
+}
+
+# 安装Docker
+install_docker() {
+    local is_low_mem=$1
+
+    if [ "$is_low_mem" = true ]; then
+        print_color YELLOW "$(display_text "low_memory")"
+        curl -fsSL https://get.docker.com/ | sh -s docker --mirror Aliyun
+    else
+        print_color YELLOW "$(display_text "standard_docker")"
+        curl -fsSL https://get.docker.com/ | sh
     fi
 
-    if ! systemctl is-active --quiet docker; then
-        print_color YELLOW "$(display_text "Docker is not running. Starting Docker..." "Docker未运行。正在启动Docker...")"
-        systemctl start docker
-    fi
+    systemctl start docker
+    systemctl enable docker
 
-    # 验证Docker是否正确安装和运行
     if docker info &>/dev/null; then
-        print_color GREEN "$(display_text "Docker is installed and running." "Docker已安装并运行。")"
+        print_color GREEN "$(display_text "docker_success")"
     else
-        print_color RED "$(display_text "Failed to install or start Docker. Please check your system and try again." "安装或启动Docker失败。请检查您的系统并重试。")"
+        print_color RED "$(display_text "docker_fail")"
         exit 1
+    fi
+}
+
+# 检查系统并安装Docker
+check_system_and_install_docker() {
+    if command -v docker &>/dev/null; then
+        print_color GREEN "$(display_text "docker_installed")"
+        return
+    fi
+
+    print_color YELLOW "$(display_text "docker_not_found")"
+
+    if check_system_memory; then
+        install_docker false
+    else
+        install_docker true
     fi
 }
 
 # 检查IPv4
 check_ipv4() {
     if ! curl -s4m8 ifconfig.co | grep -q '\.'; then
-        print_color RED "$(display_text "Error: The host must have IPv4." "错误：主机必须有IPv4。")"
+        print_color RED "$(display_text "ipv4_error")"
         exit 1
     fi
 }
 
 # 检查CPU架构
 check_architecture() {
-    ARCHITECTURE=$(uname -m)
-    case "$ARCHITECTURE" in
-        aarch64 ) ARCH=arm64v8;;
-        armv7l ) ARCH=arm32v7;;
-        x64|x86_64|amd64 ) ARCH=latest;;
-        * ) print_color RED "$(display_text "Error: Unsupported architecture: $ARCHITECTURE" "错误：不支持的架构：$ARCHITECTURE")"; exit 1;;
+    case "$(uname -m)" in
+        aarch64) ARCH=arm64v8 ;;
+        armv7l)  ARCH=arm32v7 ;;
+        x86_64|amd64) ARCH=latest ;;
+        *) print_color RED "$(display_text "arch_error") $(uname -m)"; exit 1 ;;
     esac
 }
 
 # 输入token
 input_token() {
     if [ -z "$TMTOKEN" ]; then
-        reading "$(display_text "Enter your Traffmonetizer token: " "输入你的Traffmonetizer令牌：")" "TMTOKEN"
+        reading "$(display_text "token_prompt")" "TMTOKEN"
         if [ -z "$TMTOKEN" ]; then
-            print_color RED "$(display_text "Error: Token cannot be empty." "错误：令牌不能为空。")"
+            print_color RED "$(display_text "token_empty")"
             input_token
         fi
     fi
@@ -192,33 +251,27 @@ input_token() {
 
 # 输入设备名称
 input_device_name() {
-    reading "$(display_text "Enter device name (optional, press Enter to skip): " "输入设备名称（可选，按Enter跳过）：")" "DEVICE_NAME"
+    reading "$(display_text "device_name_prompt")" "DEVICE_NAME"
 }
 
 # 安装Traffmonetizer
 install_traffmonetizer() {
     clear_screen
     if docker ps -a | grep -q "$NAME"; then
-        print_color YELLOW "$(display_text "Traffmonetizer is already installed." "Traffmonetizer已经安装。")"
+        print_color YELLOW "$(display_text "tm_installed")"
         return
     fi
 
-    print_color YELLOW "$(display_text "Installing Traffmonetizer..." "正在安装Traffmonetizer...")"
-
-    # 拉取镜像
+    print_color YELLOW "$(display_text "tm_installing")"
     docker pull traffmonetizer/cli_v2:$ARCH
 
-    # 创建容器
-    if [ -n "$DEVICE_NAME" ]; then
-        docker run -d --name $NAME --restart always traffmonetizer/cli_v2:$ARCH start accept --token "$TMTOKEN" --device-name "$DEVICE_NAME"
-    else
-        docker run -d --name $NAME --restart always traffmonetizer/cli_v2:$ARCH start accept --token "$TMTOKEN"
-    fi
+    local run_cmd="docker run -d --name $NAME --restart always traffmonetizer/cli_v2:$ARCH start accept --token $TMTOKEN"
+    [ -n "$DEVICE_NAME" ] && run_cmd+=" --device-name $DEVICE_NAME"
 
-    if [ $? -eq 0 ]; then
-        print_color GREEN "$(display_text "Traffmonetizer installed successfully." "Traffmonetizer安装成功。")"
+    if $run_cmd; then
+        print_color GREEN "$(display_text "tm_success")"
     else
-        print_color RED "$(display_text "Failed to install Traffmonetizer. Please check your token and try again." "安装Traffmonetizer失败。请检查您的令牌并重试。")"
+        print_color RED "$(display_text "tm_fail")"
     fi
 }
 
@@ -226,122 +279,95 @@ install_traffmonetizer() {
 uninstall_traffmonetizer() {
     clear_screen
     if ! docker ps -a | grep -q "$NAME"; then
-        print_color YELLOW "$(display_text "Traffmonetizer is not installed." "Traffmonetizer未安装。")"
+        print_color YELLOW "$(display_text "tm_not_installed")"
         return
     fi
 
-    print_color YELLOW "$(display_text "Uninstalling Traffmonetizer..." "正在卸载Traffmonetizer...")"
-    docker rm -f $(docker ps -a | grep -w "$NAME" | awk '{print $1}') 2>/dev/null
-    docker rmi -f $(docker images | grep traffmonetizer/cli_v2 | awk '{print $3}') 2>/dev/null
-    print_color GREEN "$(display_text "Traffmonetizer uninstalled." "Traffmonetizer已卸载。")"
+    print_color YELLOW "$(display_text "tm_uninstalling")"
+    docker rm -f $NAME 2>/dev/null
+    docker rmi -f $(docker images -q traffmonetizer/cli_v2) 2>/dev/null
+    print_color GREEN "$(display_text "tm_uninstalled")"
 }
 
 # 显示状态
 show_status() {
     clear_screen
-    if docker ps | grep -q "$NAME"; then
-        print_color CYAN "$(display_text "Traffmonetizer Status:" "Traffmonetizer状态：")"
-        if ! docker exec $NAME /bin/sh -c "if [ -f /bin/cli_v2 ]; then /bin/cli_v2 status; elif [ -f /app/cli_v2 ]; then /app/cli_v2 status; else echo 'CLI not found'; fi"; then
-            print_color RED "$(display_text "Failed to get status." "获取状态失败。")"
-        fi
+    print_color CYAN "$(display_text "system_status")"
 
-        print_color CYAN "$(display_text "Traffmonetizer Statistics:" "Traffmonetizer统计：")"
-        if ! docker exec $NAME /bin/sh -c "if [ -f /bin/cli_v2 ]; then /bin/cli_v2 statistics; elif [ -f /app/cli_v2 ]; then /app/cli_v2 statistics; else echo 'CLI not found'; fi"; then
-            print_color RED "$(display_text "Failed to get statistics." "获取统计信息失败。")"
-        fi
+    # 检查 Docker 状态
+    if systemctl is-active --quiet docker; then
+        print_color GREEN "● $(display_text "docker_running")"
     else
-        print_color RED "$(display_text "Traffmonetizer is not running." "Traffmonetizer未运行。")"
+        print_color RED "● $(display_text "docker_not_running")"
+    fi
+
+    # 检查 Traffmonetizer 状态
+    if docker ps -q --filter "name=$NAME" | grep -q .; then
+        print_color GREEN "● $(display_text "tm_running")"
+
+        # 获取容器运行时间
+        local uptime=$(docker inspect --format='{{.State.StartedAt}}' $NAME)
+        uptime=$(date -d "$uptime" +'%Y-%m-%d %H:%M:%S')
+        print_color BLUE "  $(display_text "tm_uptime") $uptime"
+
+        # 获取容器的CPU和内存使用情况
+        local usage=$(docker stats --no-stream --format "CPU: {{.CPUPerc}}  MEM: {{.MemUsage}}" $NAME)
+        print_color YELLOW "  $(display_text "tm_usage") $usage"
+    else
+        print_color RED "● $(display_text "tm_not_running")"
     fi
 }
 
 # 卸载Docker、Watchtower和清理系统
 uninstall_docker_and_cleanup() {
     clear_screen
-    print_color YELLOW "$(display_text "Uninstalling Docker, Watchtower and cleaning up the system..." "正在卸载Docker、Watchtower并清理系统...")"
+    print_color YELLOW "$(display_text "cleanup")"
 
-    # 检查Docker是否安装
-    if command -v docker &> /dev/null; then
-        # 停止并删除Watchtower容器（如果存在）
-        if docker ps -a | grep -q 'watchtower'; then
-            print_color YELLOW "$(display_text "Removing Watchtower..." "正在移除Watchtower...")"
-            docker stop watchtower 2>/dev/null
-            docker rm watchtower 2>/dev/null
-            docker rmi containrrr/watchtower 2>/dev/null
-        fi
-
-        # 停止所有容器
-        docker stop $(docker ps -aq) 2>/dev/null
-
-        # 删除所有容器
-        docker rm $(docker ps -aq) 2>/dev/null
-
-        # 删除所有镜像
-        docker rmi $(docker images -q) 2>/dev/null
-
-        # 删除所有卷
+    if command -v docker &>/dev/null; then
+        docker rm -f $(docker ps -aq) 2>/dev/null
+        docker rmi -f $(docker images -q) 2>/dev/null
         docker volume rm $(docker volume ls -q) 2>/dev/null
-
-        # 删除所有网络
         docker network rm $(docker network ls -q) 2>/dev/null
-    else
-        print_color YELLOW "$(display_text "Docker is not installed or already removed." "Docker未安装或已被移除。")"
     fi
 
-    # 卸载Docker
-    if command -v apt-get &> /dev/null; then
+    if command -v apt-get &>/dev/null; then
         apt-get purge -y docker-ce docker-ce-cli containerd.io docker-compose-plugin docker.io
         apt-get autoremove -y
-    elif command -v yum &> /dev/null; then
+    elif command -v yum &>/dev/null; then
         yum remove -y docker-ce docker-ce-cli containerd.io docker-compose-plugin docker
         yum autoremove -y
     fi
 
-    # 删除Docker数据目录
-    rm -rf /var/lib/docker
-    rm -rf /var/lib/containerd
+    rm -rf /var/lib/docker /var/lib/containerd /etc/docker
+    rm -f /etc/systemd/system/docker.service /etc/systemd/system/docker.socket
 
-    # 删除Docker配置文件
-    rm -rf /etc/docker
-
-    # 删除Docker系统服务文件
-    rm -f /etc/systemd/system/docker.service
-    rm -f /etc/systemd/system/docker.socket
-
-    # 刷新系统服务
     systemctl daemon-reload
 
-    # 检查iptables是否安装
-    if command -v iptables &> /dev/null; then
-        # 清理IPTables规则
-        iptables -F
-        iptables -X
-        iptables -t nat -F
-        iptables -t nat -X
-        iptables -t mangle -F
-        iptables -t mangle -X
+    if command -v iptables &>/dev/null; then
+        iptables -F && iptables -X
+        iptables -t nat -F && iptables -t nat -X
+        iptables -t mangle -F && iptables -t mangle -X
         iptables -P INPUT ACCEPT
         iptables -P FORWARD ACCEPT
         iptables -P OUTPUT ACCEPT
-    else
-        print_color YELLOW "$(display_text "iptables is not installed or already removed." "iptables未安装或已被移除。")"
     fi
 
-    print_color GREEN "$(display_text "Docker, Watchtower have been uninstalled and the system has been cleaned up." "Docker、Watchtower已卸载，系统已清理。")"
+    print_color GREEN "$(display_text "cleanup_done")"
 }
 
 # 显示菜单
 show_menu() {
     clear_screen
     print_color PURPLE "======================================="
-    print_color CYAN "$(display_text "Traffmonetizer Management Script" "Traffmonetizer 管理脚本")"
+    print_color CYAN "$(display_text "menu_title")"
     print_color PURPLE "======================================="
-    print_color YELLOW "1. $(display_text "Install Traffmonetizer" "安装 Traffmonetizer")"
-    print_color YELLOW "2. $(display_text "Uninstall Traffmonetizer" "卸载 Traffmonetizer")"
-    print_color YELLOW "3. $(display_text "Show Status" "显示状态")"
-    print_color YELLOW "4. $(display_text "Uninstall Docker, Watchtower and Cleanup" "卸载 Docker、Watchtower 并清理系统")"
-    print_color YELLOW "5. $(display_text "Exit" "退出")"
+    print_color YELLOW "1. $(display_text "menu_install")"
+    print_color YELLOW "2. $(display_text "menu_uninstall")"
+    print_color YELLOW "3. $(display_text "menu_status")"
+    print_color YELLOW "4. $(display_text "menu_cleanup")"
+    print_color YELLOW "5. $(display_text "menu_exit")"
     print_color PURPLE "======================================="
-    reading "$(display_text "Enter your choice [1-5]: " "输入你的选择 [1-5]：")" "choice"
+    reading "$(display_text "menu_prompt")" "choice"
 }
 
 # 主程序
@@ -372,14 +398,14 @@ main() {
                 ;;
             5)
                 clear_screen
-                print_color GREEN "$(display_text "Exiting..." "正在退出...")"
+                print_color GREEN "$(display_text "exiting")"
                 exit 0
                 ;;
             *)
-                print_color RED "$(display_text "Invalid option, please try again." "无效选项，请重试。")"
+                print_color RED "$(display_text "invalid_option")"
                 ;;
         esac
-        reading "$(display_text "Press Enter to continue..." "按Enter继续...")" "temp"
+        reading "$(display_text "continue_prompt")" "temp"
     done
 }
 
