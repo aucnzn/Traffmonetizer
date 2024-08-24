@@ -25,7 +25,7 @@ traffmonetizer 是一个允许用户通过分享流量来赚钱的平台。(被�
 ## 安装
 
 ```shell
-sudo bash -c "curl -fsSL https://raw.githubusercontent.com/baichal/Traffmonetizer/main/tm.sh -o /tmp/tm.sh && bash /tmp/tm.sh"
+sudo bash -c "curl -fsSL https://raw.githubusercontent.com/baichal/Traffmonetizer/main/tm.sh -o ./tm.sh && chmod +x ./tm.sh && bash ./tm.sh"
 ```
 
 ### 经验
